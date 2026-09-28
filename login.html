@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Log in · Wallpost</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header id="nav"></header>
+    <main>
+        <h1>Welcome back</h1>
+        <p class="sub">Log in to post and manage your content.</p>
+        <div class="panel"><label for="e">Email</label><input id="e" type="email" autocomplete="email"><label
+                for="p">Password</label><input id="p" type="password" autocomplete="current-password">
+            <button class="btn" id="go">Log in</button>
+            <p class="msg" id="msg" role="alert"></p>
+            <p><button class="link" id="reset">Forgot password?</button> · New here? <a href="signup.html">Sign up</a>
+            </p>
+        </div>
+    </main>
+    <script type="module">
+        import { boot, auth, A, $, showMsg } from "./js/app.js";
+        await boot({ guestOnly: true });
+        $("#go").onclick = async () => { try { await A.signInWithEmailAndPassword(auth, $("#e").value, $("#p").value); location.href = "dashboard.html"; } catch (e) { showMsg("Email or password is incorrect."); } };
+        $("#reset").onclick = async () => { if (!$("#e").value) return showMsg("Enter your email first."); try { await A.sendPasswordResetEmail(auth, $("#e").value); showMsg("Reset link sent. Check your inbox.", false); } catch (e) { showMsg("Could not send reset email."); } };
+    </script>
+</body>
+
+</html>

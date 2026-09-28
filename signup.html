@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sign up · Wallpost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header id="nav"></header>
+  <main>
+    <h1>Create your account</h1>
+    <p class="sub">Share photos and text with everyone.</p>
+    <div class="panel">
+      <div id="f"><label for="n">Display name</label><input id="n" autocomplete="name">
+        <label for="e">Email</label><input id="e" type="email" autocomplete="email"><label for="p">Password (6+
+          characters)</label><input id="p" type="password" autocomplete="new-password">
+        <button class="btn" id="go">Sign up</button>
+        <p class="msg" id="msg" role="alert"></p>
+        <p>Have an account? <a href="login.html">Log in</a></p>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    import { boot, auth, A, F, db, $, showMsg } from "./js/app.js";
+    await boot({ guestOnly: true });
+    $("#go").onclick = async () => {
+      const name = $("#n").value.trim(); if (!name) return showMsg("Enter a display name.");
+      try {
+        $("#go").disabled = true;
+        const c = await A.createUserWithEmailAndPassword(auth, $("#e").value, $("#p").value);
+        await A.updateProfile(c.user, { displayName: name });
+        await F.setDoc(F.doc(db, "users", c.user.uid), { name, email: c.user.email, createdAt: F.serverTimestamp() });
+        location.href = "dashboard.html";
+      } catch (e) { showMsg(e.message.replace("Firebase: ", "")); $("#go").disabled = false; }
+    };
+  </script>
+</body>
+
+</html>

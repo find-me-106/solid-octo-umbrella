@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Create · Wallpost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header id="nav"></header>
+  <main>
+    <h1>Create a post</h1>
+    <p class="sub">Add text, a photo, or both.</p>
+    <div class="panel"><label for="t">Text</label><textarea id="t" maxlength="1000"></textarea><label
+        for="i">Photo</label><input id="i" type="file" accept="image/*"><img id="pv" class="preview" alt="" hidden>
+      <button class="btn" id="go">Publish</button>
+      <p class="msg" id="msg" role="alert"></p>
+    </div>
+  </main>
+  <script type="module">
+    import { boot, db, F, $, uploadImage, showMsg } from "./js/app.js";
+    const user = await boot({ protect: true });
+    $("#i").onchange = e => { const f = e.target.files[0]; $("#pv").hidden = !f; if (f) $("#pv").src = URL.createObjectURL(f); };
+    $("#go").onclick = async () => {
+      const text = $("#t").value.trim(), file = $("#i").files[0];
+      if (!text && !file) return showMsg("Add some text or a photo.");
+      try {
+        $("#go").disabled = true; showMsg("Publishing…", false);
+        const imageUrl = file ? await uploadImage(file) : "";
+        await F.addDoc(F.collection(db, "posts"), { uid: user.uid, author: user.displayName || "Anonymous", authorPhoto: user.photoURL || "", text, imageUrl, createdAt: F.serverTimestamp() });
+        location.href = "dashboard.html";
+      } catch (e) { showMsg(e.message); $("#go").disabled = false; }
+    };
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Feed · Wallpost</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header id="nav"></header>
+    <main>
+        <h1>Latest posts</h1>
+        <p class="sub">Photos and thoughts from everyone on Wallpost.</p>
+        <section class="grid" id="feed">
+            <p class="empty">Loading…</p>
+        </section>
+    </main>
+    <script type="module">
+        import { boot, db, F, postCard } from "./js/app.js";
+        await boot();
+        const snap = await F.getDocs(F.query(F.collection(db, "posts"), F.orderBy("createdAt", "desc"), F.limit(60)));
+        const $feed = document.getElementById("feed");
+        $feed.innerHTML = snap.empty ? '<p class="empty">No posts yet. Sign up and share the first one.</p>' : snap.docs.map(d => postCard({ id: d.id, ...d.data() })).join("");
+    </script>
+</body>
+
+</html>

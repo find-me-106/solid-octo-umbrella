@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Profile · Wallpost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header id="nav"></header>
+  <main>
+    <h1>Your profile</h1>
+    <p class="sub">Your name and photo appear on your posts.</p>
+    <div class="panel"><span class="av big" id="av"></span><label for="n">Display name</label><input id="n"><label
+        for="e">Email</label><input id="e" disabled>
+      <label for="i">Profile photo</label><input id="i" type="file" accept="image/*"><button class="btn" id="go">Save
+        changes</button>
+      <p class="msg" id="msg" role="alert"></p>
+    </div>
+  </main>
+  <script type="module">
+    import { boot, auth, A, db, F, $, uploadImage, showMsg, esc } from "./js/app.js";
+    const user = await boot({ protect: true });
+    const draw = () => $("#av").innerHTML = user.photoURL ? `<img src="${esc(user.photoURL)}" alt="">` : esc((user.displayName || "?")[0]);
+    $("#n").value = user.displayName || ""; $("#e").value = user.email; draw();
+    $("#go").onclick = async () => {
+      try {
+        $("#go").disabled = true; const f = $("#i").files[0]; const name = $("#n").value.trim() || user.displayName;
+        const photoURL = f ? await uploadImage(f) : user.photoURL;
+        await A.updateProfile(user, { displayName: name, photoURL });
+        await F.setDoc(F.doc(db, "users", user.uid), { name, photoURL: photoURL || "" }, { merge: true });
+        draw(); showMsg("Saved. New posts will use your updated details.", false);
+      } catch (e) { showMsg(e.message); } $("#go").disabled = false;
+    };
+  </script>
+</body>
+
+</html>

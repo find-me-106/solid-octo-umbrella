@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Dashboard · Wallpost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <header id="nav"></header>
+  <main>
+    <h1 id="hi">Dashboard</h1>
+    <p class="sub">Your posts. Everyone can see them in the feed.</p>
+    <div class="stats">
+      <div class="stat"><b id="c">0</b>posts</div>
+      <div class="stat"><b id="im">0</b>with photos</div>
+    </div>
+    <section class="grid" id="mine"></section>
+  </main>
+  <script type="module">
+    import { boot, db, F, $, postCard } from "./js/app.js";
+    const user = await boot({ protect: true });
+    $("#hi").textContent = "Hi, " + (user.displayName || "there");
+    async function load() {
+      const snap = await F.getDocs(F.query(F.collection(db, "posts"), F.where("uid", "==", user.uid)));
+      const posts = snap.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+      $("#c").textContent = posts.length; $("#im").textContent = posts.filter(p => p.imageUrl).length;
+      $("#mine").innerHTML = posts.length ? posts.map(p => postCard(p, { canDelete: true })).join("") : '<p class="empty">You haven\'t posted yet. <a href="create.html">Create your first post</a>.</p>';
+    }
+    $("#mine").onclick = async e => { const id = e.target.dataset.del; if (id && confirm("Delete this post?")) { await F.deleteDoc(F.doc(db, "posts", id)); load(); } };
+    load();
+  </script>
+</body>
+
+</html>
